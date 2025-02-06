@@ -1,42 +1,14 @@
 #include "s21_string.h"
 
 int main(void){
-    // printf("%s\n", (char*)memchr("dsadas", 'a', 3));
-    // printf("%s", (char*)s21_memchr("dsadas", 'a', 3));
-    
-    // printf("%d\n", memcmp("abc", "ab3", 3));
-    // printf("%d\n", s21_memcmp("abc", "ab3", 3));
-
     char str[100] = "ghbdt";
     char str1[100] = "ghbdt";
-    s21_size_t res = s21_sprintf(str + 5, "%-10c %+20d %.10f %s %u", 'q', -10, -11.1, "str", -99);
-    sprintf(str1 + 5, "%-10c %+20d %.10f %s %u", 'q', -10, -11.1, "str", -99);
+    s21_size_t res = s21_sprintf(str + 5, "%-10c %+d %.10f %s %u", 'q', -10, -11.1, "str", -99);
+    sprintf(str1 + 5, "%c %+d %.10f %s %u", 'q', 10, -11.1, "str", -99);
     printf("%s\n", str);
     printf("%s\n", str1);
     return 0;
 }
-
-// void *s21_memchr(const void *str, int c, size_t n){
-//     void *result = NULL;
-//     char *cur = (char*)str;
-//     unsigned char temp = (unsigned char)c;
-//     for(char *i = cur; i - cur <= n; i++){
-//         if(*i == c) result = i;
-//     }
-//     return result;
-// }
-
-// int s21_memcmp(const void *str1, const void *str2, size_t n){
-//     char *temp1 = (char*)str1, *temp2 = (char*)str2;
-//     char *i = temp1, *j = temp2;
-//     int total = 0;
-//     for( ; i - temp1 <= n && j - temp2 <= n; i++, j++){
-//         if(*i == *j) continue;
-//         else if(*i < *j) total--;
-//         else if(*i > *j) total++;
-//     }
-//     return total;
-// }
 
 s21_size_t s21_strlen(const char *str){
     s21_size_t res = 0;
@@ -49,10 +21,21 @@ s21_size_t s21_strlen(const char *str){
     return res;
 }
 
+static void s21_safe_realloc(char **ptr, s21_size_t new_size){
+    if(!ptr || !new_size) return;
+    char *temp = (char*)realloc(*ptr, new_size);
+    if(temp){
+        *ptr = temp;
+    } else {
+        free(*ptr);
+        *ptr = s21_NULL;
+    }
+}
+
 static char *s21_revers(char *str){
     s21_size_t left = 0, right = s21_strlen(str) - 1;
     if(left != right){
-        while(left <= right){
+        while(left < right){
             char temp = str[left];
             str[left] = str[right];
             str[right] = temp;
@@ -108,21 +91,30 @@ static int s21_float_to_digit(char *str, float num){ // переделать ф�
 
 static FormatArg s21_initArg() {
     FormatArg new = {0};
-    new.acuracy = (char*)calloc(1, sizeof(char)); // Используем calloc, чтобы сразу обнулить
-    new.widht = (char*)calloc(1, sizeof(char));
-    new.result = (char*)calloc(1, sizeof(char));
+    new.acuracy = (char*)malloc(sizeof(char) * 2);
+    new.acuracy[1] = '\0';
+    new.widht = (char*)malloc(sizeof(char) * 2);
+    new.widht[1] = '\0';
+    new.result = (char*)malloc(sizeof(char) * 2);
+    new.result[1] = '\0';
     new.arg = s21_NULL;
     return new;
 }
 
-static void s21_clearArg(FormatArg *cur){
-    free(cur->acuracy);
-    // free(cur->arg);
-    
-    free(cur->result);
-    free(cur->widht);
-    cur->arg = cur->result = cur->acuracy = cur->widht = s21_NULL;
-    // free(cur);
+static void s21_clearArg(FormatArg *cur) {
+    if (cur->acuracy) {
+        free(cur->acuracy);
+        cur->acuracy = NULL;
+    }
+    if (cur->widht) {
+        free(cur->widht);
+        cur->widht = NULL;
+    }
+    if (cur->result) {
+        free(cur->result);
+        cur->result = NULL;
+    }
+    cur->arg = NULL;
 }
 
 static void s21_parse_specifier(FormatArg *cur_arg, char specifier, va_list argc){
@@ -159,9 +151,9 @@ static void s21_parse_specifier(FormatArg *cur_arg, char specifier, va_list argc
 static int s21_copy_to_arg(const char *str, char **dest){
     s21_size_t count_len = 0;
     while(*str >= '0' && *str <= '9'){
-        char *temp = (char*)realloc(*dest, count_len + 2);
+        char *temp = (char*)realloc(*dest, ++count_len + 1);
         *dest = temp;
-        (*dest)[count_len++] = *str;
+        (*dest)[count_len - 1] = *str;
         str++;
     }
     (*dest)[count_len] = '\0';
@@ -197,46 +189,49 @@ static int s21_parse_flags(const char *format, char temp, FormatArg *cur_arg){
     return cur - format;
 }
 
+static int s21_len_digit(int digit){
+    int temp = 0, count = 0;
+    do{
+        temp = digit % 10;
+        digit /= 10;
+        count++;
+    } while(digit != 0);
+    return count;
+}
+
 static void s21_write_widht(FormatArg *cur_arg, s21_size_t *size_res){
-    if(s21_strlen(cur_arg->widht)) *size_res += atoi(cur_arg->widht);
-    cur_arg->result = (char*)realloc(cur_arg->result, *size_res);
-    char *pt = cur_arg->result;
-    for(int i = 0; i < atoi(cur_arg->widht) && pt - cur_arg->result < *size_res; i++){
-        *pt = ' ';
-        pt++;
-    }
+    int width = atoi(cur_arg->widht);
+    if (width <= 0) return; 
+
+    *size_res += width + 3;
+
+    s21_safe_realloc(&cur_arg->result, *size_res);
+    if(!cur_arg->result) return;
+    cur_arg->result[*size_res - 1] = '\0';
+    // char *pt = cur_arg->result;
+    // for(int i = 0; i < width && pt - cur_arg->result < *size_res; i++){
+    //     *pt = ' ';
+    //     pt++;
+    // }
 }
 
 static int s21_make_res_resstr(FormatArg cur_arg, char *str){
-    s21_size_t size_res = 0;
+    s21_size_t size_res = 2;
+    if(cur_arg.widht) s21_write_widht(&cur_arg, &size_res);
     if(s21_strlen(cur_arg.flags)){
         s21_size_t len_flags = s21_strlen(cur_arg.flags);
         for(char *pt = cur_arg.flags; pt - cur_arg.flags < len_flags; pt++){
             if(*pt == '+' && (cur_arg.specifier == 'd' || cur_arg.specifier == 'u' || cur_arg.specifier == 'f')){
-                s21_write_widht(&cur_arg, &size_res);
                 int temp = (int)(uintptr_t)cur_arg.arg;
-                cur_arg.result[size_res++] = (temp < 0) ? '-' : '+';
-                cur_arg.result = realloc(cur_arg.result, size_res + 11);
-                if(cur_arg.specifier == 'd' || cur_arg.specifier == 'u'){
-                    size_res += s21_digit_to_str(&cur_arg.result[size_res], temp);
-                }
-                if(cur_arg.specifier == 'f'){
-                    size_res += s21_float_to_digit(cur_arg.result, cur_arg.arg_double);
-                }
+                cur_arg.result[size_res - 1] = (temp < 0) ? '-' : '+';
             }
             if(*pt == '-'){
-                if(cur_arg.specifier == 'd' || cur_arg.specifier == 'u'){
-                    size_res += s21_digit_to_str(cur_arg.result, (int)(uintptr_t)cur_arg.arg);
-                }
-                if(cur_arg.specifier == 'f'){
-                    size_res += s21_float_to_digit(cur_arg.result, cur_arg.arg_double);
-                }
-                s21_write_widht(&cur_arg, &size_res);
+                
             }
         }
         cur_arg.result[size_res] = '\0';
-        s21_str(str, cur_arg.result);
     }
+    s21_str(str, cur_arg.result);
     return s21_strlen(str);
 }
 
@@ -254,13 +249,16 @@ s21_size_t s21_sprintf(char *str, const char *format, ...){
                 s21_parse_specifier(&cur_arg, *cur1, argc);
             }
         } else {
-            cur2 += s21_make_res_resstr(cur_arg, cur2);
-            s21_clearArg(&cur_arg);
             *cur2 = *cur1;
             cur2++;
-            cur_arg = s21_initArg();
         }
+        // cur2 += s21_make_res_resstr(cur_arg, cur2);
+        s21_clearArg(&cur_arg);
+        cur_arg = s21_initArg();
+
     }
     va_end(argc);
+    // если cur_arg не пустой нужно его обработать а потом уже освободить
+    s21_clearArg(&cur_arg);
     return s21_strlen(str);
 }

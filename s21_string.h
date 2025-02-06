@@ -22,8 +22,6 @@ typedef struct {
     double arg_double;
 }FormatArg;
 
-void *s21_memchr(const void *str, int c, size_t n);
-int s21_memcmp(const void *str1, const void *str2, size_t n);
 s21_size_t s21_sprintf(char *str, const char *format, ...);
 s21_size_t s21_strlen(const char *str);
 static char *s21_revers(char *str);
