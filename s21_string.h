@@ -24,9 +24,5 @@ typedef struct {
 
 s21_size_t s21_sprintf(char *str, const char *format, ...);
 s21_size_t s21_strlen(const char *str);
-static char *s21_revers(char *str);
-static s21_size_t s21_str(char *str, char *dest);
-static int s21_digit_to_str(char *str, int digit);
-static int s21_float_to_digit(char *str, float num);
 
 #endif
