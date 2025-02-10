@@ -4,7 +4,7 @@ int main(void){
     char str[100] = "ghbdt";
     char str1[100] = "ghbdt";
     // s21_size_t res = s21_sprintf(str + 5, "%-10c %+d %.10f %s %u", 'q', -10, -11.1, "str", -99);
-    s21_sprintf(str + 5, "%d %f", 10, 11.1);
+    s21_sprintf(str + 5, "%.10f %100d %s", 11.4324, 10, "fdsfsd");
     // sprintf(str1 + 5, "%c %+d %.10f %s %u", 'q', 10, -11.1, "str", -99);
     printf("%s\n", str);
     // printf("%s\n", str1);
@@ -84,9 +84,16 @@ static int s21_float_to_digit(char *str, float num){ // переделать ф�
     int temp = (int)num, id = 0;
     id = s21_digit_to_str(str, temp);
     str[id++] = '.';
-    int number = (num - (int)num) * 10;
-    number = ~number + 1;
-    id += s21_digit_to_str(str + id, number);
+    float number = (num - (int)num);
+    int digit = (int)number;
+    int count = 0;
+    while(number != digit && count != 6){
+        number *= 10;
+        count++;
+        digit = (int)number;
+    }
+    if(digit < 0) digit = ~digit + 1;
+    id += s21_digit_to_str(str + id, digit);
     return id;
 }
 
@@ -115,11 +122,6 @@ static void s21_clearArg(FormatArg *cur) {
     cur->arg = NULL;
 }
 
-// static void s21_float_to_str(int digit, char *result){
-//     if(result == NULL) return;
-
-// }
-
 static int s21_len_digit(int digit){
     int temp = 0, count = 0;
     do{
@@ -130,7 +132,20 @@ static int s21_len_digit(int digit){
     return count;
 }
 
+int s21_len_float(double acc){
+    int count = 0;
+    int integer = (int)acc;  // берём целую часть числа
+    while (integer != acc)  // сравниваем целую часть числа с самим числом
+    {
+        acc *= 10;  // если нужно, то добавляем в целую часть числа новую цифру
+        count++;
+        integer = (int)acc;
+    }
+    return count;
+}
+
 static void s21_parse_specifier(FormatArg *cur_arg, char specifier, va_list argc){ // тут додлать шорт лонг
+    s21_size_t new_size = 0;
     switch(specifier){
         case 'c':        
             cur_arg->specifier = 'c';
@@ -145,12 +160,17 @@ static void s21_parse_specifier(FormatArg *cur_arg, char specifier, va_list argc
         case 'f':
             cur_arg->specifier = 'f';
             double temp_flo = va_arg(argc, double);
-            s21_safe_realloc(&cur_arg->result, 20);
+            new_size = s21_len_digit((int)temp_flo) + s21_len_float(temp_flo) + 6;
+            s21_safe_realloc(&cur_arg->result, new_size);
             s21_float_to_digit(cur_arg->result, temp_flo);
             break;
         case 's':
             cur_arg->specifier = 's';
-            cur_arg->arg = va_arg(argc, char*);
+            char *temp_str = va_arg(argc, char*);
+            new_size = s21_strlen(temp_str);
+            s21_safe_realloc(&cur_arg->result, new_size + 1);
+            s21_str(cur_arg->result, temp_str);
+            cur_arg->result[new_size] = '\0';
             break;
         case 'u':
             cur_arg->specifier = 'u';
@@ -228,10 +248,7 @@ static void s21_write_widht(FormatArg *cur_arg, s21_size_t *size_res){ // тут
 }
 
 static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // тут просто какая то дичь
-
     // if(cur_arg.widht) s21_write_widht(&cur_arg, &size_res);
-
-   
     if(s21_strlen(cur_arg.flags)){
         s21_size_t len_flags = s21_strlen(cur_arg.flags);
         for(char *pt = cur_arg.flags; pt - cur_arg.flags < len_flags; pt++){
@@ -249,10 +266,8 @@ static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // тут прос
     if(cur_arg.acuracy){
 
     }
-
-    
     s21_str(str, cur_arg.result);
-    return s21_strlen(str) + 1;
+    return s21_strlen(str);
 }
 
 s21_size_t s21_sprintf(char *str, const char *format, ...){
