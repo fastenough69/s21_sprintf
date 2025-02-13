@@ -4,10 +4,11 @@ int main(void){
     char str[100] = "ghbdt";
     char str1[100] = "ghbdt";
     // s21_size_t res = s21_sprintf(str + 5, "%-10c %+d %.10f %s %u", 'q', -10, -11.1, "str", -99);
-    s21_sprintf(str + 5, "%.10f %100d %s", 11.4324, 10, "fdsfsd");
-    // sprintf(str1 + 5, "%c %+d %.10f %s %u", 'q', 10, -11.1, "str", -99);
+    // s21_sprintf(str + 5, "%.10f %+10da %s", 11.4324, -10, "fdsfsd");
+    s21_sprintf(str + 5, "%+10da %s", -10, "fdsfsd");
+    sprintf(str1 + 5, "%-10da %s", -10, "fdsfsd");
     printf("%s\n", str);
-    // printf("%s\n", str1);
+    printf("%s\n", str1);
     return 0;
 }
 
@@ -27,9 +28,6 @@ static void s21_safe_realloc(char **ptr, s21_size_t new_size){
     char *temp = (char*)realloc(*ptr, new_size);
     if(temp){
         *ptr = temp;
-    } else {
-        free(*ptr);
-        *ptr = s21_NULL;
     }
 }
 
@@ -62,13 +60,16 @@ static int s21_digit_to_str(char *str, int digit){ // нужно передел�
         digit = ~digit + 1;
         flag_negative = true;
     }
-    char *new = (char*)malloc(sizeof(char));
+    char *new = (char*)malloc(12);
+    *new = '\0';
     do{
         temp = digit % 10;
         new[id_new++] = temp + 48;
         digit /= 10;
-        new = (char*)realloc(new, id_new + 1);
     } while(digit != 0);
+    // if(flag_negative){
+    //     new[id_new++] = '-';
+    // }
     new[id_new] = '\0';
     new = s21_revers(new);
 
@@ -100,7 +101,9 @@ static int s21_float_to_digit(char *str, float num){ // переделать ф�
 static FormatArg s21_initArg() {
     FormatArg new = {0};
     new.acuracy = (char*)malloc(sizeof(char) * 2);
+    new.acuracy[0] = '\0';
     new.widht = (char*)malloc(sizeof(char) * 2);
+    new.widht[0] = '\0';
     new.result = (char*)malloc(sizeof(char) * 2);
     new.arg = s21_NULL;
     return new;
@@ -231,31 +234,58 @@ static int s21_parse_flags(const char *format, char temp, FormatArg *cur_arg){
     return cur - format;
 }
 
-static void s21_write_widht(FormatArg *cur_arg, s21_size_t *size_res){ // тут надо доделать
-    int width = atoi(cur_arg->widht);
+static void s21_write_widht(char *arg_widht , char **res, s21_size_t *size){ // тут надо доделать
+    int width = atoi(arg_widht);
     if (width <= 0) return; 
+    *size += width + 1;
 
-    *size_res += width + 3;
-
-    s21_safe_realloc(&cur_arg->result, *size_res);
-    if(!cur_arg->result) return;
-    cur_arg->result[*size_res - 1] = '\0';
-    // char *pt = cur_arg->result;
-    // for(int i = 0; i < width && pt - cur_arg->result < *size_res; i++){
-    //     *pt = ' ';
-    //     pt++;
-    // }
+    s21_safe_realloc(res, width + 1);
+    if(!res) return;
+    *res = memset(*res, ' ', width);
+    (*res)[width] = '\0';
 }
 
-static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // тут просто какая то дичь
-    // if(cur_arg.widht) s21_write_widht(&cur_arg, &size_res);
+static int s21_make_res_resstr(FormatArg cur_arg, char *str){
+    char *res = malloc(sizeof(char) * 2);
+    *res = '\0';
+    s21_size_t size = 0;
+    if(s21_strlen(cur_arg.widht)) s21_write_widht(cur_arg.widht, &res, &size);
+    else{
+        size = s21_strlen(cur_arg.result);
+        if(size){
+            s21_safe_realloc(&res, size);
+        }
+    }
     if(s21_strlen(cur_arg.flags)){
         s21_size_t len_flags = s21_strlen(cur_arg.flags);
         for(char *pt = cur_arg.flags; pt - cur_arg.flags < len_flags; pt++){
-            if(*pt == '-'){
-                
-            }
             if(*pt == '+' && (cur_arg.specifier == 'd' || cur_arg.specifier == 'u' || cur_arg.specifier == 'f')){
+                if(size == s21_strlen(cur_arg.result)){
+                    size++;
+                    s21_size_t size_arg = s21_strlen(cur_arg.result) + 1;
+                    s21_safe_realloc(&res, size);
+                }
+                int index = 0;
+                for(int i = 1; i < size && index < s21_strlen(cur_arg.result); i++){
+                    if(index < s21_strlen(cur_arg.result))
+                        res[i] = cur_arg.result[index++];
+                }
+                int digit = atoi(cur_arg.result);
+                if(digit > 0) res[0] = '+';
+
+                // s21_size_t size_arg = s21_strlen(cur_arg.result) + 2;
+                // char *temp = malloc(sizeof(char) * size_arg);
+                // temp[size_arg - 1] = '\0';
+                // int index = 0;
+                // for(int i = 1; i < size_arg-1 && index < s21_strlen(cur_arg.result); i++){
+                //     if(index < s21_strlen(cur_arg.result)) temp[i] = cur_arg.result[index++];
+                // }
+                // 
+                // temp[0] = (digit < 0) ? '-' : '+';
+                // cur_arg.result = temp;
+                // free(temp);
+            }
+            if(*pt == '-'){
                 
             }
             // if(*pt == ' ' && !flg_positive){
@@ -266,7 +296,10 @@ static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // тут прос
     if(cur_arg.acuracy){
 
     }
-    s21_str(str, cur_arg.result);
+    res[size - 1] = '\0';
+    s21_str(str, res);
+    // s21_str(str, cur_arg.result);
+    free(res);
     return s21_strlen(str);
 }
 
