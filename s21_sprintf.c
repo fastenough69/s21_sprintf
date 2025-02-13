@@ -81,7 +81,7 @@ static int s21_digit_to_str(char *str, int digit){ // нужно передел�
     return id_str;
 }
 
-static int s21_float_to_digit(char *str, float num){ // переделать функциию как автономную для float/double чисел
+static int s21_float_to_digit(char *str, float num){
     int temp = (int)num, id = 0;
     id = s21_digit_to_str(str, temp);
     str[id++] = '.';
