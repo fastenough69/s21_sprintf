@@ -6,8 +6,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stdint.h>
-// #include <math.h>
+// #include <stdint.h>
 
 typedef unsigned long s21_size_t;
 #define s21_NULL (void*)0
@@ -21,6 +20,7 @@ typedef struct {
     char *result;
     void *arg;
     double arg_double;
+    s21_size_t len_res;
 }FormatArg;
 
 int s21_len_float(double acc);
