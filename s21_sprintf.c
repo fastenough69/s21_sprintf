@@ -5,8 +5,8 @@
 int main(void){
     char str[100] = "ghbdt";
     char str1[100] = "ghbdt";
-    s21_sprintf(str + 5, "%10da %s %10c", -1, "fdsfsd", 'c');
-    sprintf(str1 + 5, "%10da %s %10c", -1, "fdsfsd", 'c');
+    s21_sprintf(str + 5, "%+10da %s %10c", 1, "fdsfsd", 'c');
+    sprintf(str1 + 5, "%+10da %s %10c", 1, "fdsfsd", 'c');
     printf("%s\n", str);
     printf("%s\n", str1);
     return 0;
@@ -105,7 +105,6 @@ static FormatArg s21_initArg() {
     new.widht = (char*)malloc(sizeof(char) * 2);
     new.widht[0] = '\0';
     new.result = (char*)malloc(sizeof(char) * 2);
-    new.arg = s21_NULL;
     return new;
 }
 
@@ -122,7 +121,6 @@ static void s21_clearArg(FormatArg *cur) {
         free(cur->result);
         cur->result = NULL;
     }
-    cur->arg = NULL;
 }
 
 static int s21_len_digit(int digit){
@@ -199,8 +197,6 @@ static int s21_copy_to_arg(const char *str, char **dest){
     s21_size_t count_len = 0;
     while(*str >= '0' && *str <= '9'){
         s21_safe_realloc(dest, ++count_len + 1);
-        // char *temp = (char*)realloc(*dest, ++count_len + 1);
-        // *dest = temp;
         (*dest)[count_len - 1] = *str;
         str++;
     }
@@ -208,36 +204,38 @@ static int s21_copy_to_arg(const char *str, char **dest){
     return count_len;
 }
 
-static int s21_parse_flags(const char *format, char temp, FormatArg *cur_arg){ // проверять если уже такой флаг в структуре при добавлении
+static int s21_parse_flags(const char *format, FormatArg *cur_arg){ // проверять если уже такой флаг в структуре при добавлении
     const char *cur = format;
-    switch(temp){
-        case '+':
-            strcat(cur_arg->flags, "+");
-            if(*(cur + 1) >= 48 || *(cur + 1) <= 57){
+    do{
+        switch(*cur){
+            case '+':
+                strcat(cur_arg->flags, "+");
+                if(*(cur + 1) >= 48 || *(cur + 1) <= 57){
+                    cur++;
+                    cur += s21_copy_to_arg(cur, &cur_arg->widht);
+                }
+                break;
+            case '-':
+                strcat(cur_arg->flags, "-");
+                if(*(cur + 1) >= 48 || *(cur + 1) <= 57){
+                    cur++;
+                    cur += s21_copy_to_arg(cur, &cur_arg->widht);
+                }
+                break;
+            case ' ':
+                strcat(cur_arg->flags, " ");
                 cur++;
-                cur += s21_copy_to_arg(cur, &cur_arg->widht);
-            }
-            break;
-        case '-':
-            strcat(cur_arg->flags, "-");
-            if(*(cur + 1) >= 48 || *(cur + 1) <= 57){
+                break;
+            case '.':
                 cur++;
-                cur += s21_copy_to_arg(cur, &cur_arg->widht);
-            }
-            break;
-        case ' ':
-            strcat(cur_arg->flags, " ");
-            cur++;
-            break;
-        case '.':
-            cur++;
-            cur += s21_copy_to_arg(cur, &cur_arg->acuracy);
-            break;
-        default:
-            if(*(cur) >= 48 || *(cur) <= 57){
-                cur += s21_copy_to_arg(cur, &cur_arg->widht);
-            }
-    }
+                cur += s21_copy_to_arg(cur, &cur_arg->acuracy);
+                break;
+            default:
+                if(*(cur) >= 48 || *(cur) <= 57){
+                    cur += s21_copy_to_arg(cur, &cur_arg->widht);
+                }
+        }
+    } while(*cur == '-' || *cur == ' ' || *cur == '+');
     return cur - format;
 }
 
@@ -252,7 +250,8 @@ static void s21_write_widht(char *arg_widht , char **res, s21_size_t *size){
     (*res)[width] = '\0';
 }
 
-static int s21_make_res_resstr(FormatArg cur_arg, char *str){
+//так-же пока не работает флаг + и  ' ' если не задана ширина больше чем тукущий размер аргумента
+static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // эту функциию разделить на подфункции
     char *res = malloc(sizeof(char) * 2);
     *res = '\0';
     s21_size_t size = 0;
@@ -271,21 +270,33 @@ static int s21_make_res_resstr(FormatArg cur_arg, char *str){
         s21_size_t len_flags = s21_strlen(cur_arg.flags);
         for(char *pt = cur_arg.flags; pt - cur_arg.flags < len_flags; pt++){
             if(*pt == '+' && (cur_arg.specifier == 'd' || cur_arg.specifier == 'u' || cur_arg.specifier == 'f')){
-
-                int index = 0;
-                for(int i = 1; i < size_arg-1 && index < cur_arg.len_res; i++){
-                    if(index < cur_arg.len_res) temp[i] = cur_arg.result[index++];
-                }
-                cur_arg.len_res++;
                 int digit = atoi(cur_arg.result);
-                temp[0] = (digit < 0) ? '-' : '+';
-                cur_arg.result = temp;
+                if(digit > 0){
+                    int index = 0;
+                    for(int i = 1; i < size_arg-1 && index < cur_arg.len_res; i++){
+                        if(index < cur_arg.len_res) temp[i] = cur_arg.result[index++];
+                    }
+                    cur_arg.len_res++;
+                    
+                    temp[0] = (digit < 0) ? '-' : '+';
+                    cur_arg.result = temp;
+                }  
             }
             if(*pt == '-'){
                 negative_flag |= true;
             }
-            if(*pt == ' '){
-                
+            if(*pt == ' ' && (cur_arg.specifier == 'd' || cur_arg.specifier == 'u' || cur_arg.specifier == 'f')){
+                int digit = atoi(cur_arg.result);
+                if(digit > 0){
+                    int index = 0;
+                    for(int i = 1; i < size_arg-1 && index < cur_arg.len_res; i++){
+                        if(index < cur_arg.len_res) temp[i] = cur_arg.result[index++];
+                    }
+                    cur_arg.len_res++;
+                    
+                    temp[0] = (digit < 0) ? '-' : ' ';
+                    cur_arg.result = temp;
+                }  
             }
         }
     }
@@ -318,8 +329,8 @@ s21_size_t s21_sprintf(char *str, const char *format, ...){
     char *cur2 = str;
     for(const char *cur1 = format; cur1 - format < format_len; cur1++){
         if(*cur1 == '%'){
-            char temp = *(++cur1);
-            cur1 += s21_parse_flags(cur1, temp, &cur_arg);
+            ++cur1;
+            cur1 += s21_parse_flags(cur1, &cur_arg);
             if(*cur1 >= 92 || *cur1 <= 122){
                 s21_parse_specifier(&cur_arg, *cur1, argc);
             }
@@ -333,7 +344,6 @@ s21_size_t s21_sprintf(char *str, const char *format, ...){
         cur_arg = s21_initArg();
 
     }
-    // если cur_arg не пустой нужно его обработать а потом уже освободить
     s21_clearArg(&cur_arg);
     va_end(argc);
     return s21_strlen(str);

@@ -18,8 +18,6 @@ typedef struct {
     char *widht;
     char lenght;
     char *result;
-    void *arg;
-    double arg_double;
     s21_size_t len_res;
 }FormatArg;
 
