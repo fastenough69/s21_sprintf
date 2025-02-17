@@ -1,5 +1,6 @@
 // осталось доделать вещественные числа и точность и спецификаторы шорт лонг
-// нужно пофиксить ошибку по памяти в последней функции
+// доделать точность на спецификатор s
+// не забыть поменять названия на свои функции, а не из string.h
 #include "s21_string.h"
 
 int main(void){
@@ -7,8 +8,8 @@ int main(void){
     char str1[100] = "ghbdt";
     // s21_sprintf(str + 5, "%+10da %10s %10c %d", 1, "fdsfsd", 'c', -1);
     // sprintf(str1 + 5, "%+10da %10s %10c %d", 1, "fdsfsd", 'c', -1);
-    s21_sprintf(str + 5, "%+5d", 205);
-    sprintf(str1 + 5, "%+5d", 205);
+    s21_sprintf(str + 5, "%+.5d %.3s", 205, "fsdfs");
+    sprintf(str1 + 5, "%+.5d %.3s", 205, "fsdfs");
     printf("%s\n", str);
     printf("%s\n", str1);
     return 0;
@@ -273,6 +274,8 @@ static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // эту функ
     s21_size_t size_arg = cur_arg.len_res + 2;
     char *temp = malloc(sizeof(char) * size_arg);
     temp[size_arg - 1] = '\0';
+    char *copy = malloc(sizeof(char) * (cur_arg.len_res + 1));
+    copy[cur_arg.len_res] = '\0';
     char symbol = 0;
     bool flag_symbol = false;
     bool negative_flag = false;
@@ -302,8 +305,9 @@ static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // эту функ
         int acuracy = atoi(cur_arg.acuracy);
         if(cur_arg.specifier == 'd' || cur_arg.specifier == 'u'){
             if(acuracy > cur_arg.len_res){
-                s21_safe_realloc(&temp, acuracy + 1);
-                temp[acuracy] = '\0';
+                size_arg = acuracy + 1;
+                s21_safe_realloc(&temp, size_arg);
+                temp[size_arg - 1] = '\0';
                 memset(temp, '0', acuracy);
                 int j = 0; 
                 for(int i = acuracy - cur_arg.len_res; i < acuracy || j <= cur_arg.len_res; i++){
@@ -312,35 +316,35 @@ static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // эту функ
                 cur_arg.result = temp;
                 cur_arg.len_res = acuracy;
             }
-        }     
+        }
+        if(cur_arg.specifier == 's'){
+            cur_arg.len_res = atoi(cur_arg.acuracy);
+            cur_arg.result[cur_arg.len_res] = '\0';
+        } 
     }
     if(flag_symbol){
-        char *copy = malloc(sizeof(char) * (cur_arg.len_res + 1));
-        copy[cur_arg.len_res] = '\0';
-        memcpy(copy, cur_arg.result, cur_arg.len_res);
-        s21_size_t new_siz_res = cur_arg.len_res + 2;
-
-        s21_safe_realloc(&cur_arg.result, new_siz_res);
-        cur_arg.result[new_siz_res - 1] = '\0';
-        int id = 0;
-        cur_arg.len_res++;
-        for(int i = 1; i < new_siz_res - 1; i++){
-            if(id < cur_arg.len_res)
-                cur_arg.result[i] = copy[id++];
+        size_arg = cur_arg.len_res + 2;
+        s21_safe_realloc(&copy, size_arg);
+        copy[size_arg - 1] = '\0';
+        int index = 0;
+        for(int i = 1; i < size_arg - 1 && index < cur_arg.len_res; i++){
+            copy[i] = cur_arg.result[index++];
         }
-        cur_arg.result[0] = symbol;
-        free(copy);
+        cur_arg.len_res++;
+        copy[0] = symbol;
+        cur_arg.result = copy;
     }
     int id_arg = cur_arg.len_res - 1;
     if(!negative_flag){
-        size = (size - 2 < cur_arg.len_res - 1) ? size + 2 : size;
+        size = (size - 2 < cur_arg.len_res - 1) ? size + 3 : size;
         s21_safe_realloc(&res, size);
-        for(int i =  size - 2; i >= 0 && id_arg >= 0; i--){
-            res[i] = cur_arg.result[id_arg--];
+        for(int i = size - 2; i >= 0 && id_arg >= 0; i--){
+            if(id_arg >= 0) 
+                res[i] = cur_arg.result[id_arg--];
         }
     } else {
         id_arg = 0;
-        size = (size - 2 < cur_arg.len_res - 1) ? ++size : size;
+        size = (size - 2 < cur_arg.len_res - 1) ? size + 2 : size;
         s21_safe_realloc(&res, size);
         for(int i = 0; id_arg < cur_arg.len_res; i++){
             res[i] = cur_arg.result[id_arg++];
@@ -349,6 +353,7 @@ static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // эту функ
     res[size - 1] = '\0';
     s21_str(str, res);
     free(temp);
+    free(copy);
     free(res);
     return s21_strlen(str);
 }
