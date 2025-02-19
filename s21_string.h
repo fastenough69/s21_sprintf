@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdbool.h>
-// #include <stdint.h>
 
 typedef unsigned long s21_size_t;
 #define s21_NULL (void*)0
