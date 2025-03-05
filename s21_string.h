@@ -10,6 +10,11 @@
 typedef unsigned long s21_size_t;
 #define s21_NULL (void*)0
 
+typedef union {
+    wchar_t *wchar_vl;
+    char *vl;
+}TypeRes;
+
 typedef struct {
     char specifier;
     char flags[5];
