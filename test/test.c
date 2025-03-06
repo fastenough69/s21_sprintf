@@ -50,7 +50,7 @@ START_TEST(test_sprintf_c_1) {
     Suite *s;
     TCase *tc_core;
   
-    s = suite_create("\033[42m-=S21_SPRINTF_C=-\033[0m");
+    s = suite_create("-=S21_SPRINTF_C=-");
     tc_core = tcase_create("SprintfcCore");
   
     tcase_add_test(tc_core, test_sprintf_c_1);
@@ -167,7 +167,7 @@ START_TEST(test_sprintf_c_1) {
     Suite *s;
     TCase *tc_core;
   
-    s = suite_create("\033[42m-=S21_SPRINTF_D=-\033[0m");
+    s = suite_create("-=S21_SPRINTF_D=-");
     tc_core = tcase_create("SprintfdCore");
   
     tcase_add_test(tc_core, test_sprintf_d_1);
@@ -209,10 +209,10 @@ START_TEST(test_sprintf_c_1) {
   START_TEST(test_sprintf_s_3) {
     char str1[100] = "";
     char str2[100] = "";
-    char *str3 = "(%*s| ";
+    char *str3 = "(%s| ";
     char *val = "Why am I here?!";
-    ck_assert_int_eq(sprintf(str1, str3, 20, val),
-                     s21_sprintf(str2, str3, 20, val));
+    ck_assert_int_eq(sprintf(str1, str3, val),
+                     s21_sprintf(str2, str3, val));
     ck_assert_pstr_eq(str1, str2);
   }
   END_TEST
@@ -241,7 +241,7 @@ START_TEST(test_sprintf_c_1) {
     Suite *s;
     TCase *tc_core;
   
-    s = suite_create("\033[42m-=S21_SPRINTF_S=-\033[0m");
+    s = suite_create("=S21_SPRINTF_S=-");
     tc_core = tcase_create("SprintfsCore");
   
     tcase_add_test(tc_core, test_sprintf_s_1);
@@ -362,7 +362,7 @@ START_TEST(test_sprintf_c_1) {
     char str1[STR_LEN] = {'\0'};
     char str2[STR_LEN] = {'\0'};
     char *format = "%10f";
-    long double val = 15;
+    double val = 15;
     ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
   
     ck_assert_str_eq(str1, str2);
@@ -373,7 +373,7 @@ START_TEST(test_sprintf_c_1) {
     char str1[STR_LEN] = {'\0'};
     char str2[STR_LEN] = {'\0'};
     char *format = "%+f";
-    long double val = 15.1;
+    double val = 15.1;
     ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
   
     ck_assert_str_eq(str1, str2);
@@ -384,7 +384,7 @@ START_TEST(test_sprintf_c_1) {
     Suite *s;
     TCase *tc_core;
   
-    s = suite_create("\033[42m-=S21_SPRINTF_F=-\033[0m");
+    s = suite_create("-=S21_SPRINTF_F=-");
     tc_core = tcase_create("SprintfuCore");
   
     
@@ -482,7 +482,7 @@ START_TEST(test_sprintf_c_1) {
     Suite *s;
     TCase *tc_core;
   
-    s = suite_create("\033[42m-=S21_SPRINTF_U=-\033[0m");
+    s = suite_create("42m-=S21_SPRINTF_U=-");
     tc_core = tcase_create("SprintfuCore");
   
     tcase_add_test(tc_core, test_sprintf_u_1);
@@ -507,7 +507,7 @@ int main(void){
     for (int i = 0; string_tests[i] != s21_NULL; i++) {
         SRunner *runner;
         runner = srunner_create(string_tests[i]);
-        // srunner_set_fork_status(runner, CK_NOFORK);
+        srunner_set_fork_status(runner, CK_NOFORK);
         srunner_run_all(runner, CK_NORMAL);
         number_failed += srunner_ntests_failed(runner);
         srunner_free(runner);

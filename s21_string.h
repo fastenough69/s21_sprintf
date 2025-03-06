@@ -2,7 +2,7 @@
 #define S21_STRING_H
 
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> // не забыть удалить
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdbool.h>
