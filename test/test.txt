@@ -1,0 +1,27 @@
+Running suite(s): [42m-=S21_SPRINTF_C=-[0m
+80%: Checks: 5, Failures: 1, Errors: 0
+test.c:16:F:SprintfcCore:test_sprintf_c_3:0: Assertion 'sprintf(str1, "%5c", b) == s21_sprintf(str2, "%5c", b)' failed: sprintf(str1, "%5c", b) == 5, s21_sprintf(str2, "%5c", b) == 0
+Running suite(s): [42m-=S21_SPRINTF_D=-[0m
+40%: Checks: 10, Failures: 6, Errors: 0
+test.c:71:F:SprintfdCore:test_sprintf_d_1:0: Assertion 'sprintf(str1, str3, val) == s21_sprintf(str2, str3, val)' failed: sprintf(str1, str3, val) == 2, s21_sprintf(str2, str3, val) == 0
+test.c:91:F:SprintfdCore:test_sprintf_d_3:0: Assertion 'sprintf(str1, str3, e) == s21_sprintf(str2, str3, e)' failed: sprintf(str1, str3, e) == 4, s21_sprintf(str2, str3, e) == 0
+test.c:121:F:SprintfdCore:test_sprintf_d_6:0: Assertion 'sprintf(str1, str3, d) == s21_sprintf(str2, str3, d)' failed: sprintf(str1, str3, d) == 5, s21_sprintf(str2, str3, d) == 3
+test.c:131:F:SprintfdCore:test_sprintf_d_7:0: Assertion 'sprintf(str1, str3, e) == s21_sprintf(str2, str3, e)' failed: sprintf(str1, str3, e) == 4, s21_sprintf(str2, str3, e) == 0
+test.c:141:F:SprintfdCore:test_sprintf_d_8:0: Assertion 'sprintf(str1, str3, e) == s21_sprintf(str2, str3, e)' failed: sprintf(str1, str3, e) == 6, s21_sprintf(str2, str3, e) == 9
+test.c:161:F:SprintfdCore:test_sprintf_d_10:0: Assertion 'sprintf(str1, str3, e) == s21_sprintf(str2, str3, e)' failed: sprintf(str1, str3, e) == 15, s21_sprintf(str2, str3, e) == 0
+Running suite(s): [42m-=S21_SPRINTF_S=-[0m
+40%: Checks: 5, Failures: 3, Errors: 0
+test.c:193:F:SprintfsCore:test_sprintf_s_1:0: Assertion 'sprintf(str1, str3, val, val, val) == s21_sprintf(str2, str3, val, val, val)' failed: sprintf(str1, str3, val, val, val) == 58, s21_sprintf(str2, str3, val, val, val) == 38
+test.c:214:F:SprintfsCore:test_sprintf_s_3:0: Assertion 'sprintf(str1, str3, 20, val) == s21_sprintf(str2, str3, 20, val)' failed: sprintf(str1, str3, 20, val) == 23, s21_sprintf(str2, str3, 20, val) == 10
+test.c:235:F:SprintfsCore:test_sprintf_s_5:0: Assertion 'sprintf(str1, str3, val) == s21_sprintf(str2, str3, val)' failed: sprintf(str1, str3, val) == 7, s21_sprintf(str2, str3, val) == 2
+Running suite(s): [42m-=S21_SPRINTF_U=-[0m
+50%: Checks: 8, Failures: 4, Errors: 0
+test.c:415:F:SprintfuCore:test_sprintf_u_2:0: Assertion 'sprintf(str1, str3, val) == s21_sprintf(str2, str3, val)' failed: sprintf(str1, str3, val) == 4, s21_sprintf(str2, str3, val) == 0
+test.c:435:F:SprintfuCore:test_sprintf_u_4:0: Assertion 'sprintf(str1, str3, val) == s21_sprintf(str2, str3, val)' failed: sprintf(str1, str3, val) == 4, s21_sprintf(str2, str3, val) == 2
+test.c:455:F:SprintfuCore:test_sprintf_u_6:0: Assertion 'sprintf(str1, str3, val) == s21_sprintf(str2, str3, val)' failed: sprintf(str1, str3, val) == 2, s21_sprintf(str2, str3, val) == 6
+test.c:475:F:SprintfuCore:test_sprintf_u_8:0: Assertion 'sprintf(str1, str3, val1) == s21_sprintf(str2, str3, val1)' failed: sprintf(str1, str3, val1) == 20, s21_sprintf(str2, str3, val1) == 0
+Running suite(s): [42m-=S21_SPRINTF_F=-[0m
+0%: Checks: 3, Failures: 3, Errors: 0
+test.c:338:F:SprintfuCore:test_sprintf_f_8:0: Assertion 's21_sprintf(str1, format, val) == sprintf(str2, format, val)' failed: s21_sprintf(str1, format, val) == 0, sprintf(str2, format, val) == 9
+test.c:366:F:SprintfuCore:test_sprintf_f_10:0: Assertion 's21_sprintf(str1, format, val) == sprintf(str2, format, val)' failed: s21_sprintf(str1, format, val) == 0, sprintf(str2, format, val) == 10
+test.c:377:F:SprintfuCore:test_sprintf_f_11:0: Assertion 's21_sprintf(str1, format, val) == sprintf(str2, format, val)' failed: s21_sprintf(str1, format, val) == 0, sprintf(str2, format, val) == 9

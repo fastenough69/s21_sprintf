@@ -2,18 +2,24 @@
 // не забыть поменять названия на свои функции, а не из string.h
 #include "s21_string.h"
 
-int main(void){
-    char str[100] = "ghbdt";
-    char str1[100] = "ghbdt";
-    // s21_sprintf(str + 5, "%+10da %10s %10c %d", 1, "fdsfsd", 'c', -1);
-    // sprintf(str1 + 5, "%+10da %10s %10c %d", 1, "fdsfsd", 'c', -1);
-    wchar_t wstr[] = L"fsdfs";
-    s21_sprintf(str + 5, "%+-10.1d %-10.2ls %+-.8f %c", 205, "fsdfs", 11.0021, 'c');
-    sprintf(str1 + 5, "%+-10.1d %-10.2ls %+-.8f %c", 205, wstr, 11.0021, 'c');
-    printf("%s\n", str);
-    printf("%s\n", str1);
-    return 0;
-}
+// int main(void){
+//     // char str[100] = "ghbdt";
+//     // char str1[100] = "ghbdt";
+//     // // s21_sprintf(str + 5, "%+10da %10s %10c %d", 1, "fdsfsd", 'c', -1);
+//     // // sprintf(str1 + 5, "%+10da %10s %10c %d", 1, "fdsfsd", 'c', -1);
+//     // long digit = 324534543;
+//     // s21_sprintf(str + 5, "%+-10.1d %-10.2s %+-.8f %c, %ld", 205, "fsdfs", 11.0021, 'c', digit);
+//     // sprintf(str1 + 5, "%+-10.1d %-10.2s %+-.8f %c, %ld", 205, "fsdfs", 11.0021, 'c', digit);
+//     // printf("%s\n", str);
+//     // printf("%s\n", str1);
+//     char str1[100] = {0};
+//     char str2[100] = {0};
+//     int b = 66;
+//     printf("%d %d\n", sprintf(str1, "%5c", b), (int)s21_sprintf(str2, "%5c", b));
+//     printf("%s\n", str1);
+//     printf("%s\n", str2);
+//     return 0;
+// }
 
 s21_size_t s21_strlen(const char *str){
     s21_size_t res = 0;
@@ -48,15 +54,6 @@ static char *s21_revers(char *str){
     return str;
 }
 
-// s21_size_t s21_str_lchar(wchar_t *str, wchar_t *dest){
-//     s21_size_t id_str = 0;
-//     s21_size_t len_dest = s21_strlen((char*)dest);
-//     for(int *pt = dest; (s21_size_t)(pt- dest) < len_dest; pt++){
-//         str[id_str++] = (char)(*pt);
-//     }
-//     return id_str;
-// }
-
 static s21_size_t s21_str(char *str, char *dest){
     s21_size_t id_str = 0;
     s21_size_t len_dest = s21_strlen(dest);
@@ -66,14 +63,14 @@ static s21_size_t s21_str(char *str, char *dest){
     return id_str;
 }
 
-static int s21_digit_to_str(char *str, int digit){
-    int id_new = 0, temp = 0, id_str = 0;
+static long long s21_digitLong_to_str(char *str, long long digit){
+    long long id_new = 0, temp = 0, id_str = 0;
     bool flag_negative = false;
     if((int)digit < 0){
         digit = ~digit + 1;
         flag_negative = true;
     }
-    char *new = (char*)malloc(12);
+    char *new = (char*)malloc(20);
     *new = '\0';
     do{
         temp = digit % 10;
@@ -97,7 +94,7 @@ static int s21_digit_to_str(char *str, int digit){
 static int s21_float_to_digit(char *str, double num, int precision) {
     // Обрабатываем целую часть
     int temp = (int)num;
-    int id = s21_digit_to_str(str, temp);
+    int id = s21_digitLong_to_str(str, temp);
     str[id++] = '.';
     
     // Обрабатываем дробную часть
@@ -112,13 +109,13 @@ static int s21_float_to_digit(char *str, double num, int precision) {
     int fraction = (int)(fractional_part * multiplier + 0.5);
 
     // Добавляем ведущие нули, если необходимо
-    int zeros_to_add = precision - s21_digit_to_str(str + id, fraction);
+    int zeros_to_add = precision - s21_digitLong_to_str(str + id, fraction);
     for (int i = 0; i < zeros_to_add; i++) {
         str[id++] = '0';
     }
 
     // Добавляем саму дробную часть
-    id += s21_digit_to_str(str + id, fraction);
+    id += s21_digitLong_to_str(str + id, fraction);
     str[id] = '\0';
     return id;
 }
@@ -131,9 +128,6 @@ static FormatArg s21_initArg() {
     new.widht = (char*)malloc(sizeof(char) * 2);
     new.widht[0] = '\0';
     new.result = (char*)malloc(sizeof(char) * 2);
-    new.new_res = (TypeRes*)malloc(sizeof(TypeRes));
-    new.new_res->wchar_vl = (wchar_t*)malloc(sizeof(wchar_t) * 2);
-    new.new_res->wchar_vl[0] = '\0';
     return new;
 }
 
@@ -150,17 +144,9 @@ static void s21_clearArg(FormatArg *cur) {
         free(cur->result);
         cur->result = NULL;
     }
-    if(cur->new_res){
-        if(cur->new_res->wchar_vl){
-            free(cur->new_res->wchar_vl);
-            cur->new_res->wchar_vl = NULL;
-        }
-        free(cur->new_res);
-        cur->new_res = NULL;
-    }
 }
 
-static int s21_len_digit(int digit){
+static int s21_len_digitLong(long long digit){
     int count = 0;
     do{
         // temp = digit % 10;
@@ -205,12 +191,15 @@ static void s21_parse_specifier(FormatArg *cur_arg, char specifier, va_list argc
             cur_arg->specifier = 'd';
             if(cur_arg->lenght == 'l'){
                 long temp_lgd = va_arg(argc, long);
+                new_size = s21_len_digitLong(temp_lgd) + 2;
+                s21_safe_realloc(&cur_arg->result, new_size);
+                s21_digitLong_to_str(cur_arg->result, (long long)temp_lgd);
                 /*...*/
             } else {
                 int temp = va_arg(argc, int);
-                new_size = s21_len_digit(temp) + 2;
+                new_size = s21_len_digitLong(temp) + 2;
                 s21_safe_realloc(&cur_arg->result, new_size);
-                s21_digit_to_str(cur_arg->result, temp);
+                s21_digitLong_to_str(cur_arg->result, (long long)temp);
             }
             break;
         case 'f':
@@ -218,44 +207,29 @@ static void s21_parse_specifier(FormatArg *cur_arg, char specifier, va_list argc
             int acuracy = atoi(cur_arg->acuracy);
             acuracy = (acuracy == 0) ? 6 : acuracy;
             double temp_flo = va_arg(argc, double);
-            new_size = s21_len_digit((int)temp_flo) + s21_len_float(temp_flo) + 6;
+            new_size = s21_len_digitLong((long)(int)temp_flo) + s21_len_float(temp_flo) + 6;
             s21_safe_realloc(&cur_arg->result, new_size);
             s21_float_to_digit(cur_arg->result, temp_flo, acuracy);
             break;
         case 's':
             cur_arg->specifier = 's';
-            if(cur_arg->lenght == 'l'){
-                char *temp_str = va_arg(argc, char*);
-                new_size = s21_strlen(temp_str);
-                s21_safe_realloc(&cur_arg->result, new_size + 1);
-                s21_str(cur_arg->result, temp_str);
-                cur_arg->result[new_size] = '\0';
-                /*...*/
-            } else {
-                char *temp_str = va_arg(argc, char*);
-                new_size = s21_strlen(temp_str);
-                s21_safe_realloc(&cur_arg->result, new_size + 1);
-                s21_str(cur_arg->result, temp_str);
-                cur_arg->result[new_size] = '\0';
-            }
+            char *temp_str = va_arg(argc, char*);
+            new_size = s21_strlen(temp_str);
+            s21_safe_realloc(&cur_arg->result, new_size + 1);
+            s21_str(cur_arg->result, temp_str);
+            cur_arg->result[new_size] = '\0';
             break;
         case 'u':
             cur_arg->specifier = 'u';
             if(cur_arg->lenght == 'l'){
-                long temp_ulg = va_arg(argc, unsigned long);
+                // unsigned long temp_ulg = va_arg(argc, unsigned long);
                 /*...*/
             } else {
                 unsigned int temp_uint = va_arg(argc, unsigned int);
-                new_size = s21_len_digit(temp_uint) + 2;
+                new_size = s21_len_digitLong(temp_uint) + 2;
                 s21_safe_realloc(&cur_arg->result, new_size);
-                s21_digit_to_str(cur_arg->result, temp_uint);
+                s21_digitLong_to_str(cur_arg->result, temp_uint);
             }
-            break;
-        case 'l':
-            cur_arg->lenght = 'l';
-            break;
-        case 'h':
-            cur_arg->lenght = 'h';
             break;
     }
     cur_arg->len_res = s21_strlen(cur_arg->result);
@@ -324,7 +298,7 @@ static void s21_write_widht(char *arg_widht ,char **res, s21_size_t *size){
 
 static void s21_make_flags(FormatArg cur_arg, bool *flag_symbol, char *symbol, bool *negative_flag){
     s21_size_t len_flags = s21_strlen(cur_arg.flags);
-    for(char *pt = cur_arg.flags; pt - cur_arg.flags < len_flags; pt++){
+    for(char *pt = cur_arg.flags; (s21_size_t)(pt - cur_arg.flags) < len_flags; pt++){
         if(*pt == '+' && (cur_arg.specifier == 'd' || cur_arg.specifier == 'u' || cur_arg.specifier == 'f')){
             int digit = atoi(cur_arg.result); 
             *flag_symbol |= true;
@@ -345,15 +319,15 @@ static void s21_make_flags(FormatArg cur_arg, bool *flag_symbol, char *symbol, b
     }
 }
 
-static s21_size_t s21_make_acuracy(FormatArg cur_arg, s21_size_t *size_arg, s21_size_t size, char *temp, char **res){
+static s21_size_t s21_make_acuracy(FormatArg cur_arg, s21_size_t *size_arg, s21_size_t size, char *temp){
     int acuracy = atoi(cur_arg.acuracy);
     if(cur_arg.specifier == 'd' || cur_arg.specifier == 'u'){
-        if(acuracy > cur_arg.len_res){
+        if((s21_size_t)acuracy > cur_arg.len_res){
             *size_arg = acuracy + 1;
             s21_safe_realloc(&temp, *size_arg);
             temp[*size_arg - 1] = '\0';
             memset(temp, '0', acuracy);
-            int j = 0; 
+            s21_size_t j = 0; 
             for(int i = acuracy - cur_arg.len_res; i < acuracy || j <= cur_arg.len_res; i++){
                 temp[i] = cur_arg.result[j++];
             }
@@ -376,15 +350,15 @@ static s21_size_t s21_make_acuracy(FormatArg cur_arg, s21_size_t *size_arg, s21_
 }
 
 static void s21_write_res(FormatArg cur_arg ,bool negative_flag, s21_size_t *size, char **res){
-    int id_arg = cur_arg.len_res - 1;
+    s21_size_t id_arg = cur_arg.len_res - 1;
     if(!negative_flag){
-        // if(size - 2 < cur_arg.len_res - 1){
-        //     size += 2;
-        //     s21_safe_realloc(&res, size);
-        // }
-        for(int i = *size - 2; i >= 0 && id_arg >= 0; i--){
-            if(id_arg >= 0)
-                (*res)[i] = cur_arg.result[id_arg--];
+        if(*size - 2 < cur_arg.len_res - 1){
+            *size += 2;
+            s21_safe_realloc(res, *size);
+        }
+        for(int i = *size - 2; i >= 0; i--){
+            // if(id_arg >= 0)
+            (*res)[i] = cur_arg.result[id_arg--];
         }
     } else {
         id_arg = 0;
@@ -402,8 +376,8 @@ static void s21_write_symbol_digit(FormatArg *cur_arg, char **copy, s21_size_t *
     *size_arg = cur_arg->len_res + 2;
     s21_safe_realloc(copy, *size_arg);
     (*copy)[*size_arg - 1] = '\0';
-    int index = 0;
-    for(int i = 1; i < *size_arg - 1 && index < cur_arg->len_res; i++){
+    s21_size_t index = 0;
+    for(s21_size_t i = 1; i < *size_arg - 1 && index < cur_arg->len_res; i++){
         (*copy)[i] = cur_arg->result[index++];
     }
     cur_arg->len_res++;
@@ -415,7 +389,7 @@ static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // эту функ
     char *res = malloc(sizeof(char) * 2);
     *res = '\0';
     s21_size_t size = 0;
-    if(s21_strlen(cur_arg.widht) && atoi(cur_arg.widht) > cur_arg.len_res) s21_write_widht(cur_arg.widht, &res, &size);
+    if(s21_strlen(cur_arg.widht) && (s21_size_t)atoi(cur_arg.widht) > cur_arg.len_res) s21_write_widht(cur_arg.widht, &res, &size);
     else{
         size = cur_arg.len_res + 1;
         if(size){
@@ -437,13 +411,13 @@ static int s21_make_res_resstr(FormatArg cur_arg, char *str){ // эту функ
         s21_make_flags(cur_arg, &flag_symbol, &symbol, &negative_flag);
     }
     if(s21_strlen(cur_arg.acuracy)){
-        size = s21_make_acuracy(cur_arg, &size_arg, size, temp, &res);
+        size = s21_make_acuracy(cur_arg, &size_arg, size, temp);
         if(cur_arg.specifier == 's'){
             int acuracy = atoi(cur_arg.acuracy);
-            if(acuracy <= cur_arg.len_res){
+            if((s21_size_t)acuracy <= cur_arg.len_res){
                 cur_arg.len_res = acuracy;
             }
-            if(acuracy >= size){
+            if((s21_size_t)acuracy >= size){
                 size = cur_arg.len_res + 1;
                 s21_safe_realloc(&res, size);
                 res[size - 1] = '\0';
@@ -468,7 +442,7 @@ s21_size_t s21_sprintf(char *str, const char *format, ...){
     s21_size_t format_len = s21_strlen(format);
     FormatArg cur_arg = s21_initArg();
     char *cur2 = str;
-    for(const char *cur1 = format; cur1 - format < format_len; cur1++){
+    for(const char *cur1 = format; (s21_size_t)(cur1 - format) < format_len; cur1++){
         if(*cur1 == '%'){
             ++cur1;
             cur1 += s21_parse_flags(cur1, &cur_arg);
