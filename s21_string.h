@@ -22,6 +22,6 @@ typedef struct {
 
 int s21_len_float(double acc);
 s21_size_t s21_strlen(const char *str);
-s21_size_t s21_sprintf(char *str, const char *format, ...);
+int s21_sprintf(char *str, const char *format, ...);
 
 #endif

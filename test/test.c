@@ -275,27 +275,27 @@ START_TEST(test_sprintf_c_1) {
 //   }
 //   END_TEST
   
-//   START_TEST(test_sprintf_f_3) {
-//     char str1[STR_LEN] = {'\0'};
-//     char str2[STR_LEN] = {'\0'};
-//     char *format = "%.0Lf";
-//     long double val = 15.35;
-//     ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
+  START_TEST(test_sprintf_f_3) {
+    char str1[STR_LEN] = {'\0'};
+    char str2[STR_LEN] = {'\0'};
+    char *format = "%.0f";
+    double val = 15.35;
+    ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
   
-//     ck_assert_str_eq(str1, str2);
-//   }
-//   END_TEST
+    ck_assert_str_eq(str1, str2);
+  }
+  END_TEST
   
-//   START_TEST(test_sprintf_f_4) {
-//     char str1[STR_LEN] = {'\0'};
-//     char str2[STR_LEN] = {'\0'};
-//     char *format = "%.Lf";
-//     long double val = 15.35;
-//     ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
+  START_TEST(test_sprintf_f_4) {
+    char str1[STR_LEN] = {'\0'};
+    char str2[STR_LEN] = {'\0'};
+    char *format = "%.f";
+    double val = 15.35;
+    ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
   
-//     ck_assert_str_eq(str1, str2);
-//   }
-//   END_TEST
+    ck_assert_str_eq(str1, str2);
+  }
+  END_TEST
   
 //   START_TEST(test_sprintf_f_5) {
 //     char str1[STR_LEN] = {'\0'};
@@ -308,27 +308,27 @@ START_TEST(test_sprintf_c_1) {
 //   }
 //   END_TEST
   
-//   START_TEST(test_sprintf_f_6) {
-//     char str1[STR_LEN] = {'\0'};
-//     char str2[STR_LEN] = {'\0'};
-//     char *format = "%.15Lf";
-//     long double val = -15.35581134;
-//     ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
+  START_TEST(test_sprintf_f_6) {
+    char str1[STR_LEN] = {'\0'};
+    char str2[STR_LEN] = {'\0'};
+    char *format = "%.9f";
+    double val = -15.3558;
+    ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
   
-//     ck_assert_str_eq(str1, str2);
-//   }
-//   END_TEST
+    ck_assert_str_eq(str1, str2);
+  }
+  END_TEST
   
-//   START_TEST(test_sprintf_f_7) {
-//     char str1[STR_LEN] = {'\0'};
-//     char str2[STR_LEN] = {'\0'};
-//     char *format = "%Lf";
-//     long double val = 72537572375.1431341;
-//     ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
+  START_TEST(test_sprintf_f_7) {
+    char str1[STR_LEN] = {'\0'};
+    char str2[STR_LEN] = {'\0'};
+    char *format = "%f";
+    long double val = 72537572375.1431341;
+    ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
   
-//     ck_assert_str_eq(str1, str2);
-//   }
-//   END_TEST
+    ck_assert_str_eq(str1, str2);
+  }
+  END_TEST
   
   START_TEST(test_sprintf_f_8) {
     char str1[STR_LEN] = {'\0'};
@@ -391,6 +391,10 @@ START_TEST(test_sprintf_c_1) {
     tcase_add_test(tc_core, test_sprintf_f_8);
     tcase_add_test(tc_core, test_sprintf_f_10);
     tcase_add_test(tc_core, test_sprintf_f_11);
+    tcase_add_test(tc_core, test_sprintf_f_7);
+    tcase_add_test(tc_core, test_sprintf_f_6);
+    tcase_add_test(tc_core, test_sprintf_f_4);
+    tcase_add_test(tc_core, test_sprintf_f_3);
   
     suite_add_tcase(s, tc_core);
   
