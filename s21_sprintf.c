@@ -2,15 +2,15 @@
 #include "s21_string.h"
 
 // int main(void){
-//     // char str[100] = "ghbdt";
-//     // char str1[100] = "ghbdt";
-//     // // s21_sprintf(str + 5, "%+10da %10s %10c %d", 1, "fdsfsd", 'c', -1);
-//     // // sprintf(str1 + 5, "%+10da %10s %10c %d", 1, "fdsfsd", 'c', -1);
-//     // long digit = 324534543;
-//     // s21_sprintf(str + 5, "%+-10.1d %-10.2s %+-.8f %c, %ld", 205, "fsdfs", 11.0021, 'c', digit);
-//     // sprintf(str1 + 5, "%+-10.1d %-10.2s %+-.8f %c, %ld", 205, "fsdfs", 11.0021, 'c', digit);
-//     // printf("%s\n", str);
-//     // printf("%s\n", str1);
+//     // // char str[100] = "ghbdt";
+//     // // char str1[100] = "ghbdt";
+//     // // // s21_sprintf(str + 5, "%+10da %10s %10c %d", 1, "fdsfsd", 'c', -1);
+//     // // // sprintf(str1 + 5, "%+10da %10s %10c %d", 1, "fdsfsd", 'c', -1);
+//     // // long digit = 324534543;
+//     // // s21_sprintf(str + 5, "%+-10.1d %-10.2s %+-.8f %c, %ld", 205, "fsdfs", 11.0021, 'c', digit);
+//     // // sprintf(str1 + 5, "%+-10.1d %-10.2s %+-.8f %c, %ld", 205, "fsdfs", 11.0021, 'c', digit);
+//     // // printf("%s\n", str);
+//     // // printf("%s\n", str1);
 //     char str1[512] = {'\0'};
 //     char str2[512] = {'\0'};
 //     char *str3 = "%.0f";
@@ -193,13 +193,12 @@ static void s21_parse_specifier(FormatArg *cur_arg, char specifier, va_list argc
             cur_arg->result[1] = '\0';
             break;
         case 'd':
-            cur_arg->specifier = 'd'; // сделать 'h' тут
+            cur_arg->specifier = 'd';
             if(cur_arg->lenght == 'l'){
                 long temp_lgd = va_arg(argc, long);
                 new_size = s21_len_digitLong(temp_lgd) + 2;
                 s21_safe_realloc(&cur_arg->result, new_size);
                 s21_digitLong_to_str(cur_arg->result, (long long)temp_lgd);
-                /*...*/
             }else if(cur_arg->lenght == 'h'){
                 short int temp_sh = (short int)va_arg(argc, int);
                 new_size = s21_len_digitLong(temp_sh) + 2;
@@ -219,18 +218,16 @@ static void s21_parse_specifier(FormatArg *cur_arg, char specifier, va_list argc
                 acuracy = 0;
             } else if(s21_strlen(cur_arg->acuracy)){
                 acuracy = atoi(cur_arg->acuracy);
-                // acuracy = (acuracy == 0) ? 6 : acuracy;
             } else {
                 acuracy = 6;
             }
-            // acuracy = (acuracy == 0) ? 6 : acuracy;
             double temp_flo = va_arg(argc, double);
             new_size = s21_len_digitLong((long)temp_flo) + s21_len_float(temp_flo) + 6;
             s21_safe_realloc(&cur_arg->result, new_size);
             s21_float_to_digit(cur_arg->result, temp_flo, acuracy);
             break;
         case 's':
-            cur_arg->specifier = 's';
+            cur_arg->specifier = 's'; // попробовать сделать  s h
             char *temp_str = va_arg(argc, char*);
             new_size = s21_strlen(temp_str);
             s21_safe_realloc(&cur_arg->result, new_size + 1);
@@ -245,6 +242,11 @@ static void s21_parse_specifier(FormatArg *cur_arg, char specifier, va_list argc
                 s21_safe_realloc(&cur_arg->result, new_size);
                 s21_digitLong_to_str(cur_arg->result, temp_ulg);
                 /*...*/
+            } else if(cur_arg->lenght == 'h'){
+                unsigned short temp_uss = (unsigned short)va_arg(argc, unsigned int);
+                new_size = s21_len_digitLong(temp_uss) + 2;
+                s21_safe_realloc(&cur_arg->result, new_size);
+                s21_digitLong_to_str(cur_arg->result, temp_uss);
             } else {
                 unsigned int temp_uint = va_arg(argc, unsigned int);
                 new_size = s21_len_digitLong(temp_uint) + 2;
@@ -259,7 +261,6 @@ static void s21_parse_specifier(FormatArg *cur_arg, char specifier, va_list argc
 static int s21_copy_to_arg(const char *str, char **dest){
     s21_size_t count_len = 0;
     (*dest)[count_len] = 48;
-    // printf("%d\n", (int)s21_strlen(*dest));
     while(*str >= '0' && *str <= '9'){
         s21_safe_realloc(dest, ++count_len + 1);
         (*dest)[count_len - 1] = *str;
