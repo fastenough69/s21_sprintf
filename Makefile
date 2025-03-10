@@ -1,5 +1,6 @@
 GCC= gcc -std=c11
 FLAGS= -Wall -Wextra -Werror
+MEM= -fsanitize=thread
 MAIN_FILE= s21_sprintf.c
 VALGRIND= valgrind --tool=memcheck --leak-check=yes
 TARGET= s21_sprintf

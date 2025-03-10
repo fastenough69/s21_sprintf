@@ -1,0 +1,5 @@
+.vscode
+*.o
+s21_sprintf
+*.md
+*.txt

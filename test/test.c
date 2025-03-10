@@ -311,7 +311,7 @@ START_TEST(test_sprintf_c_1) {
   START_TEST(test_sprintf_f_6) {
     char str1[STR_LEN] = {'\0'};
     char str2[STR_LEN] = {'\0'};
-    char *format = "%.9f";
+    char *format = "%.12f";
     double val = -15.3558;
     ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
   
@@ -323,7 +323,7 @@ START_TEST(test_sprintf_c_1) {
     char str1[STR_LEN] = {'\0'};
     char str2[STR_LEN] = {'\0'};
     char *format = "%f";
-    long double val = 72537572375.1431341;
+    double val = 72537572375.1431341;
     ck_assert_int_eq(s21_sprintf(str1, format, val), sprintf(str2, format, val));
   
     ck_assert_str_eq(str1, str2);
@@ -341,22 +341,6 @@ START_TEST(test_sprintf_c_1) {
   }
   END_TEST
   
-//   START_TEST(test_sprintf_f_9) {
-//     char str1[STR_LEN] = {'\0'};
-//     char str2[STR_LEN] = {'\0'};
-//     char *format = "% .0f %.lf %Lf %f %lf %Lf";
-//     float val = 0;
-//     double val1 = 0;
-//     long double val2 = 3515315.153151;
-//     float val3 = 5.5;
-//     double val4 = 9851.51351;
-//     long double val5 = 95919539159.53151351131;
-//     ck_assert_int_eq(s21_sprintf(str1, format, val, val1, val2, val3, val4, val5),
-//                      sprintf(str2, format, val, val1, val2, val3, val4, val5));
-  
-//     ck_assert_str_eq(str1, str2);
-//   }
-//   END_TEST
   
   START_TEST(test_sprintf_f_10) {
     char str1[STR_LEN] = {'\0'};
