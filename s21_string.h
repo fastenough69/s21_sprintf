@@ -20,7 +20,7 @@ typedef struct {
     s21_size_t len_res;
 }FormatArg;
 
-int s21_len_float(double acc);
+// int s21_len_float(double acc);
 s21_size_t s21_strlen(const char *str);
 int s21_sprintf(char *str, const char *format, ...);
 
